@@ -1,25 +1,30 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import Demo from './views/Demo'
+import Replay from './views/Replay';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div>
+        <ul className="nav">
+          <li>
+            <Link to="/demo">Demo</Link>
+          </li>
+          <li>
+            <Link to="/replay">Replay</Link>
+          </li>
+        </ul>
+        <em>
+          move mouse, click anywhere, then click Item-66 to trigger an error,
+          refresh, then click Replay link.
+        </em>
+      </div>
+      <hr />
+      <Route path="/demo" component={Demo} />
+      <Route path="/replay" component={Replay} />
+    </Router>
   );
 }
 
