@@ -1,53 +1,111 @@
 import React, { useState } from 'react';
+import Mouse from './components/Mouse';
+import PlayCtrl from './components/PlayCtrl';
 
-let flag = false;
-const RATIO = .75;
-export default function Demo() {
-  let data = localStorage.getItem('dot');
-  let [mouse, setMouse] = useState({ left: 0, top: 0, type: 'move' });
+const RATIO = 0.6;
+const initialMouse = { left: 0, top: 0, type: 'move' };
+let mIframe;
+let rafStart = 0
+let rafElapse = 0;
+let rafId;
+
+// records
+let timeline = []
+let records = {client: {}, timeline: []}
+let lastTime = 0
+let w,h
+
+function getData() {
+  records = localStorage.getItem('dot');
   try {
-    data = JSON.parse(data);
+    records = JSON.parse(records);
   } catch (e) {
-    console.warn('no user data');
+    console.warn('no user records');
   }
-  const timeline = data.timeline;
-  let startTime = timeline[0].ts;
-  if (!flag) {
-    timeline.forEach(event => {
-      const delay = event.ts - startTime;
-      const pos = { x: event.x , y: event.y };
+  timeline = records.timeline
+  if(timeline.length) {
+    lastTime = timeline[timeline.length - 1].ts;
+    
+  };
+  ({ w=0, h =0 } = records.client);
+}
+getData();
+export default function Demo() {
+  let [mouse, setMouse] = useState(initialMouse);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  
+  
+  const handlePlayPause = play => {
+    if (!timeline.length) {
+      getData();
+    }
+    setPlaying(play);
+    if (play) {
+      rafStart = 0
+      rafId = window.requestAnimationFrame(tick); // start tick
+    } else {
+      rafElapse += (performance.now() - rafStart)
+      // console.log(rafElapse);
+      window.cancelAnimationFrame(rafId);
+    }
 
-      setTimeout(() => {
-        if (event.type === 'mouse:move') {
+    function tick(timestamp) {
+      if (!rafStart) rafStart = timestamp;
+      const progress = timestamp - rafStart + rafElapse;
+      handleUiChange(progress);
+    }
+
+    function handleUiChange(ts) {
+      if (!timeline.length) {
+        window.cancelAnimationFrame(rafId);
+        setTimeout(() => {
+          setPlaying(false);
+          setProgress(0);
+          setMouse(initialMouse);
+          mIframe && mIframe.contentWindow.scrollTo(0, 0);
+        }, 500);
+        return;
+      }
+
+      if (ts >= timeline[0].ts) {
+        // console.log(ts, rafElapse, timeline.length);
+        let record = timeline.shift();
+        const pos = { x: record.x * RATIO, y: record.y * RATIO };
+        setProgress(record.ts / lastTime);
+        if (record.type === 'mouse:move') {
           setMouse({ type: 'move', ...pos });
-        } else if (event.type === 'mouse:click') {
+        } else if (record.type === 'mouse:click') {
           setMouse({ type: 'click', ...pos });
-        } else if (event.type === 'scroll') {
-          const mIframe = document.querySelector('#mIframe');
-          mIframe && mIframe.contentWindow.scrollTo(event.x, event.y);
+        } else if (record.type === 'scroll') {
+          mIframe = document.querySelector('#mIframe');
+          mIframe && mIframe.contentWindow.scrollTo(record.x, record.y);
         }
-      }, delay);
-    });
-    flag = true
-  }
-  const { w, h } = data.client;
+      }
+      rafId = window.requestAnimationFrame(tick);
+    }
+  };
 
   return (
-    <div className="Replay">
+    <div className="Replay" style={{ width: w * RATIO, height: h * RATIO }}>
       <iframe
         id="mIframe"
         title="replay"
-        style={{ width: w * RATIO, height: h * RATIO }}
         src="http://localhost:3000/Demo"
-        frameBorder="1"
+        style={{
+          width: w,
+          height: h,
+          transform: 'scale(' + RATIO + ')',
+          transformOrigin: '0 0'
+        }}
+        frameBorder="0"
       />
-      <div
-        className={[
-          'Replay-Mouse',
-          mouse.type === 'click' ? 'click' : ''
-        ].join(' ')}
-        style={{ left: mouse.x, top: mouse.y + 76}}
+      <PlayCtrl
+        isPlaying={playing}
+        progress={progress}
+        onPlayPause={handlePlayPause}
       />
+      <Mouse mouse={mouse} />
     </div>
   );
 }

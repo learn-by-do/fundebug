@@ -1,6 +1,6 @@
 (function(win) {
   if (win._FD) {
-    console.warn('fundebug SDK has already defined in window._FD');
+    console.warn('fundebug SDK has already been defined in window._FD');
     return;
   }
 
@@ -12,10 +12,14 @@
     if (payload.length === MAX_RECORD_NUMBER) {
       payload.shift();
     }
-    payload.push({ ts: Date.now(), ...data });
+    payload.push({ ts: performance.now(), ...data });
   }
 
   const dot = (data = payload) => {
+    let startTs = data[0].ts
+    data.forEach(item => {
+      item.ts -= startTs
+    })
     localStorage.setItem(
       'dot',
       JSON.stringify({
@@ -52,8 +56,7 @@
     win.addEventListener(
       'scroll',
       throttle(function(event) {
-        // const { pageXoffset: x, pageYoffset: y } = event.currentTarget;
-        const { scrollX: x, scrollY: y } = window;
+        const { scrollX: x, scrollY: y } = win;
         addRecord({ type: 'scroll', x, y });
       }, MOUSE_THROTTLE_INTERVAL),
       {
@@ -63,10 +66,10 @@
     );
   };
   const handleError = () => {
-    const oldHandler = window.onerror;
-    window.onerror = (msg, url, lineNo, columnNo, error) => {
+    const oldHandler = win.onerror;
+    win.onerror = (msg, url, lineNo, columnNo, error) => {
       if (oldHandler && typeof oldHandler === 'function') {
-        oldHandler.call(msg, url, lineNo, columnNo, error);
+        oldHandler.call(win, msg, url, lineNo, columnNo, error);
       }
 
       const data = { type: 'error', msg, url, lineNo, columnNo, error };
@@ -101,9 +104,9 @@
   }
 
   const sdk = {
-    monitor,
+    addRecord,
     dot
   };
   win._FD = sdk;
-  sdk.monitor();
+  monitor();
 })(window);

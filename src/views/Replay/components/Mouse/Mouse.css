@@ -1,0 +1,32 @@
+.Replay-Mouse {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 139, 139, 0.2);
+  border: 1px solid rgba(0, 139, 139, 1);
+}
+
+.Replay-Mouse.click:after {
+  animation: click .2s ease-out;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 50%;
+  background: rgba(0, 139, 139, 0.05);
+  border: 1px solid rgba(0, 139, 139, .5);
+}
+
+@keyframes click {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}

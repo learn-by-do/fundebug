@@ -1,0 +1,30 @@
+.PlayCtrl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.PlayCtrl.paused {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.PlayCtrl-btn {
+  width: 40px;
+  height: 40px;
+  background: no-repeat center/100% url(../../../../assets/play-button.svg);
+}
+
+.PlayCtrl-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 0%;
+  background: darkcyan;
+  transition: all .2s ease;
+}

@@ -6,9 +6,17 @@ function Demo() {
     .map((item, idx) => {
       return (
         <li className="Demo-item" key={idx} onClick={()=>{
-          if(idx === 66) {
+          if(idx === 44) {
             setTimeout(() => {
-              throw new Error('throw an error for test');
+              try {
+                throw new Error('throw an error for test');
+              }catch(e) {
+                if (window._FD) {
+                  window._FD.addRecord({type:'error', msg: e.message, stack: e.stack})
+                  window._FD.dot();
+                }
+              }
+              
             }, 100);
           }
         }}>

@@ -17,8 +17,8 @@ function App() {
           </li>
         </ul>
         <em>
-          move mouse, click anywhere, then click Item-66 to trigger an error,
-          refresh, then click Replay link.
+          move mouse, click anywhere, then click Item - 44 to trigger an
+          error, then click <strong>Replay</strong> link.
         </em>
       </div>
       <hr />
